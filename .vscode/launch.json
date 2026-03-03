@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Student Web App",
+      "type": "dart",
+      "request": "launch",
+      "program": "student_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/student_app",
+      "args": [
+        "-d",
+        "chrome"
+      ]
+    },
+    {
+      "name": "Warden Web App",
+      "type": "dart",
+      "request": "launch",
+      "program": "warden_app/lib/main.dart",
+      "cwd": "${workspaceFolder}/warden_app",
+      "args": [
+        "-d",
+        "chrome"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Both Apps",
+      "configurations": [
+        "Student Web App",
+        "Warden Web App"
+      ]
+    }
+  ]
+}
