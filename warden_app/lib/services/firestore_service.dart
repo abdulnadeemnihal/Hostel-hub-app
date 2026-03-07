@@ -4,11 +4,13 @@ import '../models/complaint_model.dart';
 import '../models/fee_model.dart';
 import '../models/leave_model.dart';
 import '../models/meal_model.dart';
+import '../models/meal_poll_model.dart';
 import '../models/announcement_model.dart';
 import '../models/attendance_model.dart';
 import '../models/gate_pass_model.dart';
 import '../models/room_model.dart';
 import '../utils/constants.dart';
+import '../utils/default_meal_data.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -110,6 +112,45 @@ class FirestoreService {
     await _db.collection(AppConstants.mealsCollection).doc(id).delete();
   }
 
+  /// Seeds the default 7-day Veg + Non-Veg menus if the collection is empty.
+  Future<void> seedDefaultMenus() async {
+    final snap = await _db.collection(AppConstants.mealsCollection).limit(1).get();
+    if (snap.docs.isNotEmpty) return; // Already has data
+
+    final batch = _db.batch();
+    final now = DateTime.now();
+
+    for (final item in defaultVegetarianMenu) {
+      final ref = _db.collection(AppConstants.mealsCollection).doc();
+      batch.set(ref, {
+        'day': item['day'],
+        'foodType': 'Vegetarian',
+        'breakfast': item['breakfast'],
+        'lunch': item['lunch'],
+        'snacks': item['snacks'],
+        'dinner': item['dinner'],
+        'weekStartDate': Timestamp.fromDate(now),
+        'createdAt': Timestamp.fromDate(now),
+      });
+    }
+
+    for (final item in defaultNonVegetarianMenu) {
+      final ref = _db.collection(AppConstants.mealsCollection).doc();
+      batch.set(ref, {
+        'day': item['day'],
+        'foodType': 'Non-Vegetarian',
+        'breakfast': item['breakfast'],
+        'lunch': item['lunch'],
+        'snacks': item['snacks'],
+        'dinner': item['dinner'],
+        'weekStartDate': Timestamp.fromDate(now),
+        'createdAt': Timestamp.fromDate(now),
+      });
+    }
+
+    await batch.commit();
+  }
+
   // ── Announcements ──
   Stream<List<AnnouncementModel>> getAllAnnouncements() {
     return _db
@@ -158,5 +199,86 @@ class FirestoreService {
 
   Future<void> updateGatePass(String id, Map<String, dynamic> data) async {
     await _db.collection(AppConstants.gatePassCollection).doc(id).update(data);
+  }
+
+  // ── Meal Polls ──
+  Stream<List<MealPoll>> getAllPolls() {
+    return _db
+        .collection(AppConstants.mealPollsCollection)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => MealPoll.fromMap(d.data(), d.id)).toList());
+  }
+
+  Future<void> createPoll(MealPoll poll) async {
+    await _db.collection(AppConstants.mealPollsCollection).add(poll.toMap());
+  }
+
+  Future<void> closePollAndApply(String pollId) async {
+    await _db.runTransaction((tx) async {
+      final pollRef =
+          _db.collection(AppConstants.mealPollsCollection).doc(pollId);
+      final pollSnap = await tx.get(pollRef);
+      if (!pollSnap.exists) return;
+
+      final poll = MealPoll.fromMap(pollSnap.data()!, pollSnap.id);
+      if (poll.status != 'active') return;
+
+      // Determine winner (option with most votes)
+      String? winnerName;
+      int maxVotes = 0;
+      for (final opt in poll.options) {
+        if (opt.votes > maxVotes) {
+          maxVotes = opt.votes;
+          winnerName = opt.name;
+        }
+      }
+
+      tx.update(pollRef, {
+        'status': 'closed',
+        'winner': winnerName,
+        'appliedToMenu': winnerName != null,
+      });
+
+      // Apply winner to matching meal menu(s)
+      if (winnerName != null) {
+        final mealField = _mealTypeToField(poll.mealType);
+        final foodTypes = poll.foodType == 'Both'
+            ? ['Vegetarian', 'Non-Vegetarian']
+            : [poll.foodType];
+
+        for (final ft in foodTypes) {
+          final menuSnap = await _db
+              .collection(AppConstants.mealsCollection)
+              .where('day', isEqualTo: poll.targetDay)
+              .where('foodType', isEqualTo: ft)
+              .limit(1)
+              .get();
+          if (menuSnap.docs.isNotEmpty) {
+            tx.update(menuSnap.docs.first.reference, {mealField: winnerName});
+          }
+        }
+      }
+    });
+  }
+
+  Future<void> deletePoll(String id) async {
+    await _db.collection(AppConstants.mealPollsCollection).doc(id).delete();
+  }
+
+  String _mealTypeToField(String mealType) {
+    switch (mealType) {
+      case 'Breakfast':
+        return 'breakfast';
+      case 'Lunch':
+        return 'lunch';
+      case 'Snack':
+        return 'snacks';
+      case 'Dinner':
+        return 'dinner';
+      default:
+        return 'breakfast';
+    }
   }
 }

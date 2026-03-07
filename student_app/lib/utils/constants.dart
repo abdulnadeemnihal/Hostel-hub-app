@@ -10,21 +10,69 @@ class AppConstants {
   static const String feesCollection = 'fees';
   static const String mealsCollection = 'meal_menus';
   static const String mealPreferencesCollection = 'meal_preferences';
+  static const String mealPollsCollection = 'meal_polls';
   static const String announcementsCollection = 'announcements';
   static const String attendanceCollection = 'attendance';
   static const String gatePassCollection = 'gate_passes';
   static const String wardensCollection = 'wardens';
 
-  // Complaint Categories
+  // Complaint Categories & Sub-categories
   static const List<String> complaintCategories = [
     'Maintenance',
-    'Cleanliness',
-    'Security',
-    'Food Quality',
+    'AC',
+    'Carpentry',
     'Electrical',
     'Plumbing',
-    'Furniture',
-    'Other',
+  ];
+
+  static const Map<String, List<String>> complaintSubCategories = {
+    'Maintenance': ['Room Cleaning', 'RestRoom Cleaning', 'Civil Works'],
+    'AC': ['Leakage Problem', 'Slow Cooling', 'Remote', 'Not Working'],
+    'Carpentry': [
+      'CupBoard',
+      'Door',
+      'CupBoard Mirror',
+      'Bathroom Mirror',
+      'Mosquito Mesh',
+      'Cot',
+      'Chair',
+      'Study Table',
+      'Book Shelf',
+      'Door Frame',
+      'Bathroom Hanger',
+      'Towel Stand',
+      'Soap Stand',
+      'Curtain',
+      'Table',
+      'Others',
+    ],
+    'Electrical': [
+      'Tubelight',
+      'Fans',
+      'Study Table Light',
+      'Switches',
+      'Sockets',
+      'Others',
+    ],
+    'Plumbing': [
+      'FlushTank',
+      'Faucet',
+      'Wash Basin',
+      'Tap',
+      'Shower',
+      'Water Blockages',
+      'Others',
+    ],
+  };
+
+  // Complaint Urgency Levels
+  static const List<String> urgencyLevels = ['Basic', 'Medium', 'Critical'];
+
+  // Complaint Status
+  static const List<String> complaintStatuses = [
+    'Pending',
+    'Processing',
+    'Fixed',
   ];
 
   // Leave Types
@@ -36,12 +84,31 @@ class AppConstants {
     'Academic',
   ];
 
-  // Room Types
-  static const List<String> roomTypes = [
-    'Single',
-    'Double',
-    'Triple',
+  // Leave Reasons (predefined categories)
+  static const List<String> leaveReasons = [
+    'Medical Issues',
+    'Internship',
+    'Purchase',
+    'Outing',
+    'Semester Vacation',
+    'Visiting Home',
+    'Others',
   ];
+
+  // Modes of Transportation
+  static const List<String> modesOfTransport = [
+    'Bus',
+    'Train',
+    'Auto',
+    'Cab/Taxi',
+    'Own Vehicle',
+    'By Walk',
+    'Flight',
+    'Other',
+  ];
+
+  // Room Types
+  static const List<String> roomTypes = ['Single', 'Double', 'Triple'];
 
   // Hostel Blocks
   static const List<String> hostelBlocks = [

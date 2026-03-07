@@ -4,10 +4,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/data_provider.dart';
 import '../announcements/announcements_screen.dart';
 import '../attendance/attendance_screen.dart';
-import '../complaints/complaints_screen.dart';
+import '../complaints/complaints_screen.dart'
+    show ComplaintsScreen, AddTicketScreen;
 import '../fees/fees_screen.dart';
 import '../gate_pass/gate_pass_screen.dart';
-import '../leave/leave_screen.dart';
+import '../leave/leave_screen.dart' show ApplyLeaveScreen, LeaveManagerScreen;
+import '../meals/book_meal_screen.dart';
 import '../meals/meals_screen.dart';
 import '../profile/profile_screen.dart';
 import '../room/room_screen.dart';
@@ -27,7 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     final auth = context.read<AuthProvider>();
     if (auth.student != null) {
-      context.read<DataProvider>().loadStudentData(auth.student!.uid);
+      context.read<DataProvider>().loadStudentData(
+        auth.student!.uid,
+        foodType: auth.student!.foodPreference,
+      );
     }
   }
 
@@ -114,13 +119,11 @@ class _HomeTab extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        student?.roomNumber != null && student!.roomNumber.isNotEmpty
+                        student?.roomNumber != null &&
+                                student!.roomNumber.isNotEmpty
                             ? 'Room ${student.roomNumber} • ${student.hostelBlock}'
                             : student?.department ?? 'Welcome back!',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -151,17 +154,17 @@ class _HomeTab extends StatelessWidget {
                   _QuickActionItem(
                     emoji: '📅',
                     label: 'Apply\nLeave',
-                    onTap: () => onNavigate(const LeaveScreen()),
+                    onTap: () => onNavigate(const ApplyLeaveScreen()),
                   ),
                   _QuickActionItem(
                     emoji: '🔧',
                     label: 'Raise\nTicket',
-                    onTap: () => onNavigate(const ComplaintsScreen()),
+                    onTap: () => onNavigate(const AddTicketScreen()),
                   ),
                   _QuickActionItem(
                     emoji: '🍽️',
                     label: 'Book a\nMeal',
-                    onTap: () => onNavigate(const MealsScreen()),
+                    onTap: () => onNavigate(const BookMealScreen()),
                   ),
                   _QuickActionItem(
                     emoji: '💳',
@@ -188,7 +191,7 @@ class _HomeTab extends StatelessWidget {
                     icon: Icons.event_note_rounded,
                     label: 'Leave\nManager',
                     color: const Color(0xFF4F46E5),
-                    onTap: () => onNavigate(const LeaveScreen()),
+                    onTap: () => onNavigate(const LeaveManagerScreen()),
                   ),
                   _AppTile(
                     icon: Icons.confirmation_number_rounded,
@@ -268,9 +271,14 @@ class _SectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E1E2D))),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E1E2D),
+            ),
+          ),
           const SizedBox(height: 20),
           child,
         ],
@@ -284,7 +292,11 @@ class _QuickActionItem extends StatelessWidget {
   final String emoji;
   final String label;
   final VoidCallback onTap;
-  const _QuickActionItem({required this.emoji, required this.label, required this.onTap});
+  const _QuickActionItem({
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -306,10 +318,15 @@ class _QuickActionItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E1E2D))),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E1E2D),
+              ),
+            ),
           ],
         ),
       ),
@@ -323,7 +340,12 @@ class _AppTile extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _AppTile({required this.icon, required this.label, required this.color, required this.onTap});
+  const _AppTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -342,11 +364,16 @@ class _AppTile extends StatelessWidget {
             child: Icon(icon, size: 30, color: color),
           ),
           const SizedBox(height: 8),
-          Text(label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E1E2D))),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E1E2D),
+            ),
+          ),
         ],
       ),
     );
@@ -365,18 +392,26 @@ class _NotificationsTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Notifications',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const Text(
+              'Notifications',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 24),
             Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.notifications_none_rounded, size: 64, color: Colors.grey[300]),
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
                     const SizedBox(height: 16),
-                    Text('No notifications yet',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[500])),
+                    Text(
+                      'No notifications yet',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+                    ),
                   ],
                 ),
               ),
@@ -400,11 +435,15 @@ class _SupportTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Support',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const Text(
+              'Support',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 24),
             Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: const ListTile(
                 leading: Icon(Icons.email_outlined, color: Color(0xFF4F46E5)),
                 title: Text('Email Support'),
@@ -413,7 +452,9 @@ class _SupportTab extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: const ListTile(
                 leading: Icon(Icons.phone_outlined, color: Color(0xFF4F46E5)),
                 title: Text('Call Warden'),
@@ -422,13 +463,20 @@ class _SupportTab extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: ListTile(
-                leading: const Icon(Icons.report_problem_outlined, color: Color(0xFF4F46E5)),
+                leading: const Icon(
+                  Icons.report_problem_outlined,
+                  color: Color(0xFF4F46E5),
+                ),
                 title: const Text('Raise a Complaint'),
                 subtitle: const Text('Report an issue'),
                 onTap: () => Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => const ComplaintsScreen())),
+                  context,
+                  MaterialPageRoute(builder: (_) => const ComplaintsScreen()),
+                ),
               ),
             ),
           ],

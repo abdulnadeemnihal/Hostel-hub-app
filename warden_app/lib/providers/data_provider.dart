@@ -6,6 +6,7 @@ import '../models/complaint_model.dart';
 import '../models/fee_model.dart';
 import '../models/leave_model.dart';
 import '../models/meal_model.dart';
+import '../models/meal_poll_model.dart';
 import '../models/announcement_model.dart';
 import '../models/attendance_model.dart';
 import '../models/gate_pass_model.dart';
@@ -21,6 +22,7 @@ class DataProvider extends ChangeNotifier {
   List<FeeModel> _fees = [];
   List<LeaveApplication> _leaves = [];
   List<MealMenu> _meals = [];
+  List<MealPoll> _polls = [];
   List<AnnouncementModel> _announcements = [];
   List<AttendanceModel> _attendance = [];
   List<GatePassModel> _gatePasses = [];
@@ -31,6 +33,7 @@ class DataProvider extends ChangeNotifier {
   StreamSubscription? _feesSub;
   StreamSubscription? _leavesSub;
   StreamSubscription? _mealsSub;
+  StreamSubscription? _pollsSub;
   StreamSubscription? _announcementsSub;
   StreamSubscription? _attendanceSub;
   StreamSubscription? _gatePassesSub;
@@ -42,6 +45,7 @@ class DataProvider extends ChangeNotifier {
   List<FeeModel> get fees => _fees;
   List<LeaveApplication> get leaves => _leaves;
   List<MealMenu> get meals => _meals;
+  List<MealPoll> get polls => _polls;
   List<AnnouncementModel> get announcements => _announcements;
   List<AttendanceModel> get attendance => _attendance;
   List<GatePassModel> get gatePasses => _gatePasses;
@@ -51,9 +55,11 @@ class DataProvider extends ChangeNotifier {
   int get totalRooms => _rooms.length;
   int get occupiedRooms => _rooms.where((r) => r.occupied > 0).length;
   int get availableRooms => _rooms.where((r) => !r.isFull).length;
-  int get pendingComplaints => _complaints.where((c) => c.status == 'pending').length;
+  int get pendingComplaints =>
+      _complaints.where((c) => c.status == 'pending').length;
   int get pendingLeaves => _leaves.where((l) => l.status == 'pending').length;
-  int get pendingGatePasses => _gatePasses.where((g) => g.status == 'pending').length;
+  int get pendingGatePasses =>
+      _gatePasses.where((g) => g.status == 'pending').length;
   double get totalCollectedFees =>
       _fees.fold<double>(0, (sum, f) => sum + f.paidAmount);
   double get totalPendingFees =>
@@ -66,6 +72,7 @@ class DataProvider extends ChangeNotifier {
     _feesSub?.cancel();
     _leavesSub?.cancel();
     _mealsSub?.cancel();
+    _pollsSub?.cancel();
     _announcementsSub?.cancel();
     _attendanceSub?.cancel();
     _gatePassesSub?.cancel();
@@ -100,6 +107,11 @@ class DataProvider extends ChangeNotifier {
       notifyListeners();
     });
 
+    _pollsSub = _firestoreService.getAllPolls().listen((data) {
+      _polls = data;
+      notifyListeners();
+    });
+
     _announcementsSub = _firestoreService.getAllAnnouncements().listen((data) {
       _announcements = data;
       notifyListeners();
@@ -121,7 +133,11 @@ class DataProvider extends ChangeNotifier {
     await _firestoreService.addRoom(room);
   }
 
-  Future<void> assignRoom(String studentId, String roomNumber, String block) async {
+  Future<void> assignRoom(
+    String studentId,
+    String roomNumber,
+    String block,
+  ) async {
     await _firestoreService.updateStudent(studentId, {
       'roomNumber': roomNumber,
       'hostelBlock': block,
@@ -129,10 +145,14 @@ class DataProvider extends ChangeNotifier {
   }
 
   // ── Complaints ──
-  Future<void> updateComplaint(String id, String status, String? response) async {
+  Future<void> updateComplaint(
+    String id,
+    String status,
+    String? response,
+  ) async {
     final data = <String, dynamic>{'status': status};
     if (response != null) data['response'] = response;
-    if (status == 'resolved') data['resolvedAt'] = Timestamp.now();
+    if (status == 'fixed') data['resolvedAt'] = Timestamp.now();
     await _firestoreService.updateComplaint(id, data);
   }
 
@@ -166,6 +186,19 @@ class DataProvider extends ChangeNotifier {
     await _firestoreService.deleteMealMenu(id);
   }
 
+  // ── Polls ──
+  Future<void> createPoll(MealPoll poll) async {
+    await _firestoreService.createPoll(poll);
+  }
+
+  Future<void> closePollAndApply(String pollId) async {
+    await _firestoreService.closePollAndApply(pollId);
+  }
+
+  Future<void> deletePoll(String id) async {
+    await _firestoreService.deletePoll(id);
+  }
+
   // ── Announcements ──
   Future<void> addAnnouncement(AnnouncementModel ann) async {
     await _firestoreService.addAnnouncement(ann);
@@ -187,6 +220,7 @@ class DataProvider extends ChangeNotifier {
     _feesSub?.cancel();
     _leavesSub?.cancel();
     _mealsSub?.cancel();
+    _pollsSub?.cancel();
     _announcementsSub?.cancel();
     _attendanceSub?.cancel();
     _gatePassesSub?.cancel();

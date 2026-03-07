@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class MealMenu {
   final String id;
   final String day;
+  final String foodType; // 'Vegetarian' or 'Non-Vegetarian'
   final String breakfast;
   final String lunch;
   final String snacks;
@@ -13,6 +14,7 @@ class MealMenu {
   MealMenu({
     required this.id,
     required this.day,
+    required this.foodType,
     required this.breakfast,
     required this.lunch,
     required this.snacks,
@@ -25,6 +27,7 @@ class MealMenu {
     return MealMenu(
       id: id,
       day: map['day'] ?? '',
+      foodType: map['foodType'] ?? 'Vegetarian',
       breakfast: map['breakfast'] ?? '',
       lunch: map['lunch'] ?? '',
       snacks: map['snacks'] ?? '',
@@ -37,6 +40,7 @@ class MealMenu {
   Map<String, dynamic> toMap() {
     return {
       'day': day,
+      'foodType': foodType,
       'breakfast': breakfast,
       'lunch': lunch,
       'snacks': snacks,

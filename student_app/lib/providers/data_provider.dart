@@ -4,6 +4,7 @@ import '../models/complaint_model.dart';
 import '../models/fee_model.dart';
 import '../models/leave_model.dart';
 import '../models/meal_model.dart';
+import '../models/meal_poll_model.dart';
 import '../models/announcement_model.dart';
 import '../models/attendance_model.dart';
 import '../models/gate_pass_model.dart';
@@ -16,6 +17,7 @@ class DataProvider extends ChangeNotifier {
   List<FeeModel> _fees = [];
   List<LeaveApplication> _leaves = [];
   List<MealMenu> _mealMenus = [];
+  List<MealPoll> _activePolls = [];
   List<AnnouncementModel> _announcements = [];
   List<AttendanceModel> _attendance = [];
   List<GatePassModel> _gatePasses = [];
@@ -24,6 +26,7 @@ class DataProvider extends ChangeNotifier {
   StreamSubscription? _feesSub;
   StreamSubscription? _leavesSub;
   StreamSubscription? _mealsSub;
+  StreamSubscription? _pollsSub;
   StreamSubscription? _announcementsSub;
   StreamSubscription? _attendanceSub;
   StreamSubscription? _gatePassesSub;
@@ -32,6 +35,7 @@ class DataProvider extends ChangeNotifier {
   List<FeeModel> get fees => _fees;
   List<LeaveApplication> get leaves => _leaves;
   List<MealMenu> get mealMenus => _mealMenus;
+  List<MealPoll> get activePolls => _activePolls;
   List<AnnouncementModel> get announcements => _announcements;
   List<AttendanceModel> get attendance => _attendance;
   List<GatePassModel> get gatePasses => _gatePasses;
@@ -39,16 +43,19 @@ class DataProvider extends ChangeNotifier {
   double get totalPendingFees =>
       _fees.fold<double>(0, (sum, f) => sum + f.pendingAmount);
 
-  void loadStudentData(String studentId) {
+  void loadStudentData(String studentId, {String? foodType}) {
     _complaintsSub?.cancel();
     _feesSub?.cancel();
     _leavesSub?.cancel();
     _mealsSub?.cancel();
+    _pollsSub?.cancel();
     _announcementsSub?.cancel();
     _attendanceSub?.cancel();
     _gatePassesSub?.cancel();
 
-    _complaintsSub = _firestoreService.getStudentComplaints(studentId).listen((data) {
+    _complaintsSub = _firestoreService.getStudentComplaints(studentId).listen((
+      data,
+    ) {
       _complaints = data;
       notifyListeners();
     });
@@ -63,8 +70,21 @@ class DataProvider extends ChangeNotifier {
       notifyListeners();
     });
 
-    _mealsSub = _firestoreService.getMealMenus().listen((data) {
+    _mealsSub = _firestoreService.getMealMenus(foodType: foodType).listen((data) {
       _mealMenus = data;
+      notifyListeners();
+    });
+
+    _pollsSub = _firestoreService
+        .getActivePolls()
+        .listen((data) {
+      _activePolls = data;
+      // Auto-close expired polls
+      for (final poll in data) {
+        if (poll.isExpired && poll.status == 'active') {
+          _firestoreService.autoClosePollIfExpired(poll.id);
+        }
+      }
       notifyListeners();
     });
 
@@ -73,12 +93,16 @@ class DataProvider extends ChangeNotifier {
       notifyListeners();
     });
 
-    _attendanceSub = _firestoreService.getStudentAttendance(studentId).listen((data) {
+    _attendanceSub = _firestoreService.getStudentAttendance(studentId).listen((
+      data,
+    ) {
       _attendance = data;
       notifyListeners();
     });
 
-    _gatePassesSub = _firestoreService.getStudentGatePasses(studentId).listen((data) {
+    _gatePassesSub = _firestoreService.getStudentGatePasses(studentId).listen((
+      data,
+    ) {
       _gatePasses = data;
       notifyListeners();
     });
@@ -88,12 +112,33 @@ class DataProvider extends ChangeNotifier {
     await _firestoreService.addComplaint(complaint);
   }
 
+  Future<void> updateComplaint(String id, Map<String, dynamic> data) async {
+    await _firestoreService.updateComplaint(id, data);
+  }
+
+  Future<void> deleteComplaint(String id) async {
+    await _firestoreService.deleteComplaint(id);
+  }
+
   Future<void> addLeave(LeaveApplication leave) async {
     await _firestoreService.addLeave(leave);
   }
 
+  Future<void> updateLeave(String leaveId, Map<String, dynamic> data) async {
+    await _firestoreService.updateLeave(leaveId, data);
+  }
+
+  Future<void> deleteLeave(String leaveId) async {
+    await _firestoreService.deleteLeave(leaveId);
+  }
+
   Future<void> addGatePass(GatePassModel gatePass) async {
     await _firestoreService.addGatePass(gatePass);
+  }
+
+  // ── Polls ──
+  Future<void> submitVote(String pollId, String studentId, int optionIndex) async {
+    await _firestoreService.submitVote(pollId, studentId, optionIndex);
   }
 
   @override
@@ -102,6 +147,7 @@ class DataProvider extends ChangeNotifier {
     _feesSub?.cancel();
     _leavesSub?.cancel();
     _mealsSub?.cancel();
+    _pollsSub?.cancel();
     _announcementsSub?.cancel();
     _attendanceSub?.cancel();
     _gatePassesSub?.cancel();

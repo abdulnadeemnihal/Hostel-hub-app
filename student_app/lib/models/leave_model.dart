@@ -5,14 +5,20 @@ class LeaveApplication {
   final String studentId;
   final String studentName;
   final String roomNumber;
-  final String reason;
   final String leaveType;
   final DateTime fromDate;
   final DateTime toDate;
+  final String? fromTime; // HH:mm format
+  final String? toTime; // HH:mm format
+  final String leaveReason; // predefined category
+  final String? parentPhone;
+  final String destination; // place to visit
+  final String modeOfTransport;
+  final String description; // detailed text
+  final List<String> photoUrls; // optional photos
+  final bool termsAccepted;
   final String status;
   final String? wardenRemarks;
-  final String? parentPhone;
-  final String destination;
   final DateTime createdAt;
 
   LeaveApplication({
@@ -20,14 +26,20 @@ class LeaveApplication {
     required this.studentId,
     required this.studentName,
     required this.roomNumber,
-    required this.reason,
     required this.leaveType,
     required this.fromDate,
     required this.toDate,
-    required this.status,
-    this.wardenRemarks,
+    this.fromTime,
+    this.toTime,
+    required this.leaveReason,
     this.parentPhone,
     required this.destination,
+    required this.modeOfTransport,
+    required this.description,
+    this.photoUrls = const [],
+    this.termsAccepted = false,
+    required this.status,
+    this.wardenRemarks,
     required this.createdAt,
   });
 
@@ -37,14 +49,20 @@ class LeaveApplication {
       studentId: map['studentId'] ?? '',
       studentName: map['studentName'] ?? '',
       roomNumber: map['roomNumber'] ?? '',
-      reason: map['reason'] ?? '',
-      leaveType: map['leaveType'] ?? 'personal',
+      leaveType: map['leaveType'] ?? 'Personal',
       fromDate: (map['fromDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       toDate: (map['toDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      status: map['status'] ?? 'pending',
-      wardenRemarks: map['wardenRemarks'],
+      fromTime: map['fromTime'],
+      toTime: map['toTime'],
+      leaveReason: map['leaveReason'] ?? '',
       parentPhone: map['parentPhone'],
       destination: map['destination'] ?? '',
+      modeOfTransport: map['modeOfTransport'] ?? '',
+      description: map['description'] ?? '',
+      photoUrls: List<String>.from(map['photoUrls'] ?? []),
+      termsAccepted: map['termsAccepted'] ?? false,
+      status: map['status'] ?? 'pending',
+      wardenRemarks: map['wardenRemarks'],
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -54,14 +72,20 @@ class LeaveApplication {
       'studentId': studentId,
       'studentName': studentName,
       'roomNumber': roomNumber,
-      'reason': reason,
       'leaveType': leaveType,
       'fromDate': Timestamp.fromDate(fromDate),
       'toDate': Timestamp.fromDate(toDate),
-      'status': status,
-      'wardenRemarks': wardenRemarks,
+      'fromTime': fromTime,
+      'toTime': toTime,
+      'leaveReason': leaveReason,
       'parentPhone': parentPhone,
       'destination': destination,
+      'modeOfTransport': modeOfTransport,
+      'description': description,
+      'photoUrls': photoUrls,
+      'termsAccepted': termsAccepted,
+      'status': status,
+      'wardenRemarks': wardenRemarks,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

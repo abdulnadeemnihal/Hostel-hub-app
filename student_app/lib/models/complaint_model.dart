@@ -6,9 +6,11 @@ class ComplaintModel {
   final String studentName;
   final String roomNumber;
   final String category;
-  final String title;
+  final String subCategory;
+  final String urgency;
   final String description;
-  final String status;
+  final String status; // pending, processing, fixed
+  final List<String> photos;
   final String? assignedTo;
   final String? response;
   final DateTime createdAt;
@@ -20,9 +22,11 @@ class ComplaintModel {
     required this.studentName,
     required this.roomNumber,
     required this.category,
-    required this.title,
+    required this.subCategory,
+    required this.urgency,
     required this.description,
     required this.status,
+    this.photos = const [],
     this.assignedTo,
     this.response,
     required this.createdAt,
@@ -35,10 +39,12 @@ class ComplaintModel {
       studentId: map['studentId'] ?? '',
       studentName: map['studentName'] ?? '',
       roomNumber: map['roomNumber'] ?? '',
-      category: map['category'] ?? 'other',
-      title: map['title'] ?? '',
+      category: map['category'] ?? 'Maintenance',
+      subCategory: map['subCategory'] ?? '',
+      urgency: map['urgency'] ?? 'Basic',
       description: map['description'] ?? '',
       status: map['status'] ?? 'pending',
+      photos: List<String>.from(map['photos'] ?? []),
       assignedTo: map['assignedTo'],
       response: map['response'],
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -52,9 +58,11 @@ class ComplaintModel {
       'studentName': studentName,
       'roomNumber': roomNumber,
       'category': category,
-      'title': title,
+      'subCategory': subCategory,
+      'urgency': urgency,
       'description': description,
       'status': status,
+      'photos': photos,
       'assignedTo': assignedTo,
       'response': response,
       'createdAt': Timestamp.fromDate(createdAt),

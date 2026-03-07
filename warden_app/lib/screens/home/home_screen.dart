@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/data_provider.dart';
+import '../../services/firestore_service.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../students/students_screen.dart';
 import '../complaints/complaints_screen.dart';
@@ -53,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DataProvider>().loadAllData();
+      // Seed default Veg + Non-Veg menus if the collection is empty
+      FirestoreService().seedDefaultMenus();
     });
   }
 

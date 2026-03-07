@@ -70,6 +70,41 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                   style: const TextStyle(fontWeight: FontWeight.w500)),
                               Text(s.hostelBlock,
                                   style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: s.foodPreference == 'Vegetarian'
+                                      ? Colors.green.shade50
+                                      : Colors.orange.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      s.foodPreference == 'Vegetarian'
+                                          ? Icons.eco
+                                          : Icons.restaurant,
+                                      size: 12,
+                                      color: s.foodPreference == 'Vegetarian'
+                                          ? Colors.green
+                                          : Colors.deepOrange,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      s.foodPreference == 'Vegetarian' ? 'Veg' : 'Non-Veg',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: s.foodPreference == 'Vegetarian'
+                                            ? Colors.green
+                                            : Colors.deepOrange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                           onTap: () => _showStudentDetails(context, s),
@@ -98,6 +133,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
               _infoRow('Roll Number', student.rollNumber),
               _infoRow('Department', student.department),
               _infoRow('Year', student.year),
+              _infoRow('Gender', student.gender),
+              _infoRow('Food Preference', student.foodPreference),
               _infoRow('Room', student.roomNumber),
               _infoRow('Block', student.hostelBlock),
               if (student.parentPhone != null)
