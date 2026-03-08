@@ -229,6 +229,66 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 'Applied On',
                 DateFormat('dd MMM yyyy, hh:mm a').format(l.createdAt),
               ),
+              // ── Gate Log Info ──
+              if (l.gateStatus != null) ...[
+                const Divider(),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: l.gateStatus == 'out'
+                        ? Colors.orange.shade50
+                        : Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: l.gateStatus == 'out'
+                          ? Colors.orange.shade300
+                          : Colors.green.shade300,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            l.gateStatus == 'out'
+                                ? Icons.logout
+                                : Icons.login,
+                            size: 18,
+                            color: l.gateStatus == 'out'
+                                ? Colors.orange.shade700
+                                : Colors.green.shade700,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Gate Status: ${l.gateStatus == 'out' ? 'OUT OF HOSTEL' : 'RETURNED'}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: l.gateStatus == 'out'
+                                  ? Colors.orange.shade700
+                                  : Colors.green.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (l.gateExitTime != null)
+                        _DetailRow(
+                          'Exit Time',
+                          DateFormat('dd MMM yyyy, hh:mm a')
+                              .format(l.gateExitTime!),
+                        ),
+                      if (l.gateReturnTime != null)
+                        _DetailRow(
+                          'Return Time',
+                          DateFormat('dd MMM yyyy, hh:mm a')
+                              .format(l.gateReturnTime!),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

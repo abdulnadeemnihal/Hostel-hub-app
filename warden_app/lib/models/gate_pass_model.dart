@@ -13,6 +13,10 @@ class GatePassModel {
   final String status; // pending, approved, rejected, used, expired
   final String? approvedBy;
   final String? wardenRemarks;
+  final String? gateStatus; // 'in' | 'out'
+  final DateTime? gateExitTime;
+  final DateTime? gateReturnTime;
+  final String? gateVerifiedBy;
   final DateTime createdAt;
 
   GatePassModel({
@@ -28,6 +32,10 @@ class GatePassModel {
     required this.status,
     this.approvedBy,
     this.wardenRemarks,
+    this.gateStatus,
+    this.gateExitTime,
+    this.gateReturnTime,
+    this.gateVerifiedBy,
     required this.createdAt,
   });
 
@@ -45,6 +53,10 @@ class GatePassModel {
       status: map['status'] ?? 'pending',
       approvedBy: map['approvedBy'],
       wardenRemarks: map['wardenRemarks'],
+      gateStatus: map['gateStatus'],
+      gateExitTime: (map['gateExitTime'] as Timestamp?)?.toDate(),
+      gateReturnTime: (map['gateReturnTime'] as Timestamp?)?.toDate(),
+      gateVerifiedBy: map['gateVerifiedBy'],
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -62,6 +74,10 @@ class GatePassModel {
       'status': status,
       'approvedBy': approvedBy,
       'wardenRemarks': wardenRemarks,
+      'gateStatus': gateStatus,
+      'gateExitTime': gateExitTime != null ? Timestamp.fromDate(gateExitTime!) : null,
+      'gateReturnTime': gateReturnTime != null ? Timestamp.fromDate(gateReturnTime!) : null,
+      'gateVerifiedBy': gateVerifiedBy,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
