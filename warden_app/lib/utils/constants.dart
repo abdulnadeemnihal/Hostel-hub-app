@@ -15,6 +15,7 @@ class AppConstants {
   static const String announcementsCollection = 'announcements';
   static const String attendanceCollection = 'attendance';
   static const String gatePassCollection = 'gate_passes';
+  static const String gateLogsCollection = 'gate_logs';
 
   static const List<String> complaintCategories = [
     'Maintenance',

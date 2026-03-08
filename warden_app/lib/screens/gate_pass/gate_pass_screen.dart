@@ -246,6 +246,68 @@ class _GatePassCard extends StatelessWidget {
                 ],
               ),
             ],
+            // ── Gate Log Info ──
+            if (pass.gateStatus != null) ...[
+              const Divider(height: 20),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: pass.gateStatus == 'out'
+                      ? Colors.orange.shade50
+                      : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: pass.gateStatus == 'out'
+                        ? Colors.orange.shade300
+                        : Colors.green.shade300,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          pass.gateStatus == 'out'
+                              ? Icons.logout
+                              : Icons.login,
+                          size: 16,
+                          color: pass.gateStatus == 'out'
+                              ? Colors.orange.shade700
+                              : Colors.green.shade700,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          pass.gateStatus == 'out'
+                              ? 'OUT OF HOSTEL'
+                              : 'RETURNED',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: pass.gateStatus == 'out'
+                                ? Colors.orange.shade700
+                                : Colors.green.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    if (pass.gateExitTime != null)
+                      Text(
+                        'Exit: ${DateFormat('dd MMM yyyy, hh:mm a').format(pass.gateExitTime!)}',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade700),
+                      ),
+                    if (pass.gateReturnTime != null)
+                      Text(
+                        'Return: ${DateFormat('dd MMM yyyy, hh:mm a').format(pass.gateReturnTime!)}',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade700),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

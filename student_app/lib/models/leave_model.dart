@@ -19,6 +19,10 @@ class LeaveApplication {
   final bool termsAccepted;
   final String status;
   final String? wardenRemarks;
+  final String? gateStatus; // 'in' | 'out'
+  final DateTime? gateExitTime;
+  final DateTime? gateReturnTime;
+  final String? gateVerifiedBy;
   final DateTime createdAt;
 
   LeaveApplication({
@@ -40,6 +44,10 @@ class LeaveApplication {
     this.termsAccepted = false,
     required this.status,
     this.wardenRemarks,
+    this.gateStatus,
+    this.gateExitTime,
+    this.gateReturnTime,
+    this.gateVerifiedBy,
     required this.createdAt,
   });
 
@@ -63,6 +71,10 @@ class LeaveApplication {
       termsAccepted: map['termsAccepted'] ?? false,
       status: map['status'] ?? 'pending',
       wardenRemarks: map['wardenRemarks'],
+      gateStatus: map['gateStatus'],
+      gateExitTime: (map['gateExitTime'] as Timestamp?)?.toDate(),
+      gateReturnTime: (map['gateReturnTime'] as Timestamp?)?.toDate(),
+      gateVerifiedBy: map['gateVerifiedBy'],
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -86,6 +98,10 @@ class LeaveApplication {
       'termsAccepted': termsAccepted,
       'status': status,
       'wardenRemarks': wardenRemarks,
+      'gateStatus': gateStatus,
+      'gateExitTime': gateExitTime != null ? Timestamp.fromDate(gateExitTime!) : null,
+      'gateReturnTime': gateReturnTime != null ? Timestamp.fromDate(gateReturnTime!) : null,
+      'gateVerifiedBy': gateVerifiedBy,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
