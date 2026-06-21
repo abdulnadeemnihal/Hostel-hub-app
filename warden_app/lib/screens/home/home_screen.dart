@@ -6,7 +6,7 @@ import '../dashboard/dashboard_screen.dart';
 import '../students/students_screen.dart';
 import '../complaints/complaints_screen.dart';
 import '../leave/leave_screen.dart';
-import '../rooms/rooms_screen.dart';
+import '../rooms/block_list_screen.dart';
 import '../attendance/attendance_screen.dart';
 import '../gate_pass/gate_pass_screen.dart';
 import '../mess/mess_screen.dart';
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     StudentsScreen(),
     ComplaintsScreen(),
     LeaveScreen(),
-    RoomsScreen(),
+    BlockListScreen(),
     AttendanceScreen(),
     GatePassScreen(),
     MessScreen(),

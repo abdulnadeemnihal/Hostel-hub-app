@@ -16,6 +16,7 @@ class AppConstants {
   static const String attendanceCollection = 'attendance';
   static const String gatePassCollection = 'gate_passes';
   static const String gateLogsCollection = 'gate_logs';
+  static const String blocksCollection = 'blocks';
 
   static const List<String> complaintCategories = [
     'Maintenance',
@@ -87,6 +88,8 @@ class AppConstants {
     'Block C',
     'Block D',
   ];
+
+  static const List<int> roomSharingOptions = [2, 3, 4];
 
   static const List<String> daysOfWeek = [
     'Monday',

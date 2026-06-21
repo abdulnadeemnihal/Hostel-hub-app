@@ -11,13 +11,18 @@ import '../models/announcement_model.dart';
 import '../models/attendance_model.dart';
 import '../models/gate_pass_model.dart';
 import '../models/room_model.dart';
+import '../models/block_model.dart';
+import '../models/floor_config_model.dart';
 import '../services/firestore_service.dart';
+import '../services/block_service.dart';
 
 class DataProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
+  final BlockService _blockService = BlockService();
 
   List<StudentModel> _students = [];
   List<RoomModel> _rooms = [];
+  List<BlockModel> _blocks = [];
   List<ComplaintModel> _complaints = [];
   List<FeeModel> _fees = [];
   List<LeaveApplication> _leaves = [];
@@ -29,6 +34,7 @@ class DataProvider extends ChangeNotifier {
 
   StreamSubscription? _studentsSub;
   StreamSubscription? _roomsSub;
+  StreamSubscription? _blocksSub;
   StreamSubscription? _complaintsSub;
   StreamSubscription? _feesSub;
   StreamSubscription? _leavesSub;
@@ -41,6 +47,7 @@ class DataProvider extends ChangeNotifier {
   // ── Getters ──
   List<StudentModel> get students => _students;
   List<RoomModel> get rooms => _rooms;
+  List<BlockModel> get blocks => _blocks;
   List<ComplaintModel> get complaints => _complaints;
   List<FeeModel> get fees => _fees;
   List<LeaveApplication> get leaves => _leaves;
@@ -84,6 +91,11 @@ class DataProvider extends ChangeNotifier {
 
     _roomsSub = _firestoreService.getAllRooms().listen((data) {
       _rooms = data;
+      notifyListeners();
+    });
+
+    _blocksSub = _blockService.getAllBlocks().listen((data) {
+      _blocks = data;
       notifyListeners();
     });
 
@@ -133,6 +145,56 @@ class DataProvider extends ChangeNotifier {
     await _firestoreService.addRoom(room);
   }
 
+  Future<void> createBlock(BlockModel block) async {
+    final ref = await _blockService.addBlock(block);
+    final blockId = ref.id;
+    final rooms = _generateRoomsForBlock(block, blockId);
+    await Future.wait(rooms.map((room) => _blockService.addRoom(room)));
+  }
+
+  Future<void> deleteBlock(String id) async {
+    await _blockService.deleteRoomsForBlock(id);
+    await _blockService.deleteBlock(id);
+  }
+
+  Future<void> updateBlock(BlockModel block, {bool rebuildRooms = false}) async {
+    await _blockService.updateBlock(block.id, block.toMap());
+    if (rebuildRooms) {
+      await _blockService.deleteRoomsForBlock(block.id);
+      final rooms = _generateRoomsForBlock(block, block.id);
+      await Future.wait(rooms.map((room) => _blockService.addRoom(room)));
+    }
+  }
+
+  Future<void> deleteRoom(String roomId) async {
+    await _blockService.deleteRoom(roomId);
+  }
+
+  List<RoomModel> roomsForBlock(String blockId) {
+    return _rooms.where((room) => room.blockId == blockId).toList();
+  }
+
+  List<RoomModel> roomsForFloor(String blockId, int floor) {
+    return _rooms
+        .where((room) => room.blockId == blockId && room.floor == floor)
+        .toList();
+  }
+
+  List<RoomModel> filterRooms({
+    String? blockId,
+    int? floor,
+    int? sharing,
+    bool? isAvailable,
+  }) {
+    return _rooms.where((room) {
+      if (blockId != null && room.blockId != blockId) return false;
+      if (floor != null && room.floor != floor) return false;
+      if (sharing != null && room.capacity != sharing) return false;
+      if (isAvailable != null && room.isAvailable != isAvailable) return false;
+      return true;
+    }).toList();
+  }
+
   Future<void> assignRoom(
     String studentId,
     String roomNumber,
@@ -142,6 +204,65 @@ class DataProvider extends ChangeNotifier {
       'roomNumber': roomNumber,
       'hostelBlock': block,
     });
+  }
+
+  List<RoomModel> _generateRoomsForBlock(BlockModel block, String blockId) {
+    final rooms = <RoomModel>[];
+    for (var floorIndex = 1; floorIndex <= block.floorCount; floorIndex++) {
+      final config = block.sameRoomsPerFloor
+          ? FloorConfig(
+              floorNumber: floorIndex,
+              roomsCount: block.roomsPerFloor,
+              roomSharings: block.floors.isNotEmpty
+                  ? block.floors.first.roomSharings
+                  : [],
+            )
+          : block.floors.firstWhere(
+              (floor) => floor.floorNumber == floorIndex,
+              orElse: () => FloorConfig(
+                floorNumber: floorIndex,
+                roomsCount: 0,
+                roomSharings: [],
+              ),
+            );
+
+      for (var roomIndex = 0; roomIndex < config.roomsCount; roomIndex++) {
+        final capacity = roomIndex < config.roomSharings.length
+            ? config.roomSharings[roomIndex]
+            : 2;
+        final roomNumber = '${floorIndex}${(roomIndex + 1).toString().padLeft(2, '0')}';
+        rooms.add(RoomModel(
+          id: '',
+          roomNumber: roomNumber,
+          block: block.name,
+          blockId: blockId,
+          floor: floorIndex,
+          capacity: capacity,
+          occupied: 0,
+          roomType: _roomTypeFromCapacity(capacity),
+          occupantIds: [],
+          occupantNames: [],
+          isAvailable: true,
+          amenities: ['Wi-Fi', 'Fan', 'Desk', 'Cupboard', 'Bed'],
+        ));
+      }
+    }
+    return rooms;
+  }
+
+  String _roomTypeFromCapacity(int capacity) {
+    switch (capacity) {
+      case 1:
+        return 'Single';
+      case 2:
+        return 'Double';
+      case 3:
+        return 'Triple';
+      case 4:
+        return 'Quad';
+      default:
+        return 'Shared';
+    }
   }
 
   // ── Complaints ──
@@ -216,6 +337,7 @@ class DataProvider extends ChangeNotifier {
   void dispose() {
     _studentsSub?.cancel();
     _roomsSub?.cancel();
+    _blocksSub?.cancel();
     _complaintsSub?.cancel();
     _feesSub?.cancel();
     _leavesSub?.cancel();

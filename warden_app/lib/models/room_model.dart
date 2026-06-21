@@ -6,6 +6,7 @@ class RoomModel {
   final int capacity;
   final int occupied;
   final String roomType; // single, double, triple
+  final String? blockId;
   final List<String> occupantIds;
   final List<String> occupantNames;
   final bool isAvailable;
@@ -19,6 +20,7 @@ class RoomModel {
     required this.capacity,
     required this.occupied,
     required this.roomType,
+    this.blockId,
     required this.occupantIds,
     required this.occupantNames,
     required this.isAvailable,
@@ -34,6 +36,7 @@ class RoomModel {
       capacity: map['capacity'] ?? 2,
       occupied: map['occupied'] ?? 0,
       roomType: map['roomType'] ?? 'double',
+      blockId: map['blockId'] as String?,
       occupantIds: List<String>.from(map['occupantIds'] ?? []),
       occupantNames: List<String>.from(map['occupantNames'] ?? []),
       isAvailable: map['isAvailable'] ?? true,
@@ -45,6 +48,7 @@ class RoomModel {
     return {
       'roomNumber': roomNumber,
       'block': block,
+      'blockId': blockId,
       'floor': floor,
       'capacity': capacity,
       'occupied': occupied,
